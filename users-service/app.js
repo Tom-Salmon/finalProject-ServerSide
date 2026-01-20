@@ -56,22 +56,42 @@ app.post('/api/add', async (req, res) => {
     }
 });
 
-// GET /api/users/:id - Get user by custom id
+// GET /api/users/:id - Get user by custom id with total costs
 app.get('/api/users/:id', async (req, res) => {
     try {
         const userId = parseInt(req.params.id);
+
+        // Find the user
         const user = await User.findOne({ id: userId });
         if (!user) {
-            return res.json({ message: 'User not found' });
+            return res.status(404).json({ message: 'User not found' });
         }
+
+        // Calculate total costs using aggregation
+        const costsAggregation = await mongoose.connection.collection('costs').aggregate([
+            {
+                $match: { userid: userId }
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: "$sum" }
+                }
+            }
+        ]).toArray();
+
+        // Handle zero costs case
+        const total = costsAggregation.length > 0 ? costsAggregation[0].total : 0;
+
+        // Return response with exactly 4 properties
         res.json({
             first_name: user.first_name,
             last_name: user.last_name,
             id: user.id,
-            birthday: user.birthday
+            total: total
         });
     } catch (error) {
-        res.json({ message: 'Error fetching user', error: error.message });
+        res.status(500).json({ message: 'Error fetching user', error: error.message });
     }
 });
 
