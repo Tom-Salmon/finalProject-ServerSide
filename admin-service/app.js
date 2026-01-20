@@ -38,6 +38,18 @@ app.get('/', (req, res) => {
     res.send(`Service is running on port ${port}`);
 });
 
+// GET /api/about - return team members from env
+app.get('/api/about', (req, res) => {
+    const membersString = process.env.TEAM_MEMBERS;
+    try {
+        const members = membersString ? JSON.parse(membersString) : [];
+        return res.json(members);
+    } catch (error) {
+        console.error('Failed to parse TEAM_MEMBERS', error);
+        return res.json([]);
+    }
+});
+
 app.listen(port, () => {
     logger.info(`Server running on port ${port}`);
 });
