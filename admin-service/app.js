@@ -16,6 +16,24 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 
+// Middleware: Log every HTTP request to MongoDB
+app.use(async (req, res, next) => {
+    try {
+        const logObject = {
+            level: 'info',
+            service: 'admin-service',
+            time: new Date(),
+            method: req.method,
+            url: req.originalUrl,
+            msg: `Request received: ${req.method} ${req.originalUrl}`
+        };
+        await mongoose.connection.collection('logs').insertOne(logObject);
+    } catch (error) {
+        console.error('Error logging request to database:', error);
+    }
+    next();
+});
+
 app.get('/', (req, res) => {
     res.send(`Service is running on port ${port}`);
 });
