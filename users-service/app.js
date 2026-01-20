@@ -105,6 +105,11 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
-    logger.info(`Server running on port ${port}`);
-});
+// Only start server if not being imported for testing
+if (require.main === module) {
+    app.listen(port, () => {
+        logger.info(`Server running on port ${port}`);
+    });
+}
+
+module.exports = app;
