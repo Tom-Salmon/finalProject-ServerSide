@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const pino = require('pino');
 const mongoose = require('mongoose');
+const Log = require('./models/log');
 
 dotenv.config();
 
@@ -36,6 +37,16 @@ app.use(async (req, res, next) => {
 
 app.get('/', (req, res) => {
     res.send(`Service is running on port ${port}`);
+});
+
+// GET /api/logs - retrieve all logs
+app.get('/api/logs', async (req, res) => {
+    try {
+        const logs = await Log.find();
+        res.json(logs);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching logs', error: error.message });
+    }
 });
 
 app.listen(port, () => {
